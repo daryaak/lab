@@ -12,6 +12,8 @@ public class ResultOfDivideEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "future_id")
+    private int futureId;
     @Column(name = "dividend")
     private int dividend;
     @Column(name = "divisor")
@@ -21,8 +23,8 @@ public class ResultOfDivideEntity {
     @Column(name = "remainder")
     private int remainder;
 
-    public ResultOfDivideEntity(Long id, int dividend, int divisor, int quotient, int remainder) {
-        this.id = id;
+    public ResultOfDivideEntity( int dividend, int divisor, int quotient, int remainder) {
+        this.futureId = 0;
         this.dividend = dividend;
         this.divisor = divisor;
         this.quotient = quotient;
@@ -31,6 +33,7 @@ public class ResultOfDivideEntity {
 
     public ResultOfDivideEntity() {
         this.id = (long)0;
+        this.futureId = 0;
         this.dividend = 0;
         this.divisor = 0;
         this.quotient = 0;
@@ -38,6 +41,7 @@ public class ResultOfDivideEntity {
     }
 
     public ResultOfDivideEntity(ResultOfDivide resultOfDivide) {
+        this.futureId = 0;
         this.dividend = resultOfDivide.getDividend();
         this.divisor = resultOfDivide.getDivisor();
         this.quotient = resultOfDivide.getQuotient();
@@ -82,6 +86,15 @@ public class ResultOfDivideEntity {
 
     public void setRemainder(int remainder) {
         this.remainder = remainder;
+    }
+
+
+    public int getFutureId() {
+        return futureId;
+    }
+
+    public void setFutureId(int future_id) {
+        this.futureId = future_id;
     }
 }
 

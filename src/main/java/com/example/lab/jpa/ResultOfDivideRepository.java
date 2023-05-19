@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ResultOfDivideRepository extends JpaRepository<ResultOfDivideEntity, Long> {
     @Nullable
     ResultOfDivideEntity findByDividendAndDivisor(int dividend, int divisor);
+     @Nullable
+    ResultOfDivideEntity findByFutureId (int futureId);
 }

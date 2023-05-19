@@ -1,7 +1,10 @@
 package com.example.lab.controller;
 import com.example.lab.entity.BulkParam;
 import com.example.lab.entity.BulkResponse;
+import com.example.lab.entity.FutureResponse;
 import com.example.lab.entity.ResultOfDivide;
+import com.example.lab.jpa.model.FutureIdEntity;
+import com.example.lab.jpa.model.ResultOfDivideEntity;
 import com.example.lab.memory.InMemoryStorage;
 import com.example.lab.service.Counter;
 import com.example.lab.service.DataBaseService;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.lab.service.FindResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import java.util.concurrent.CompletableFuture;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +77,7 @@ public class Controller {
                 result.setResultOfDivide(resultOfDivide);
 
                 inMemoryStorage.addToMemoryStorage(checkId,resultOfDivide);
-                dataBaseService.add(resultOfDivide);
+                dataBaseService.saveFuture(resultOfDivide);
                 result.getErrors().setStatus("OK");
             }
         }
@@ -86,6 +90,41 @@ public class Controller {
 
         return new ResponseEntity<>(result, HttpStatus.OK);
 
+    }
+
+
+    @GetMapping("/futureDivide")
+    public FutureResponse futureDivide(@RequestParam String param1, @RequestParam String param2) {
+        logger.info("Старт future");
+
+        Result result = new Result();
+        logger.info("1.Validation");
+        result.setErrors(validator.validateParameter(param1, param2));
+        if (!result.getErrors().getErrormessage().isEmpty())
+        {
+            result.getErrors().setStatus("BAD_REQUEST");
+            return new FutureResponse(null, "Validation failed");
+        }
+
+        logger.info("Generating future id");
+        FutureIdEntity id = new FutureIdEntity();
+        dataBaseService.saveFutureId(id);
+
+        int value1 = Integer.parseInt(param1);
+        int value2 = Integer.parseInt(param2);
+        CompletableFuture.runAsync(new Runnable() {
+            @Override
+            public void run(){
+                logger.info("Service works");
+                ResultOfDivide resultOfDivide=service.div(value1, value2);
+                result.getErrors().setStatus("OK");
+                logger.info("Service finished");
+                dataBaseService.saveFuture(resultOfDivide);
+                logger.info("Object saved id data base");
+            }
+        }
+        );
+        return new FutureResponse(id, "Service will complete task soon");
     }
 
     @PostMapping("/divide")
@@ -166,4 +205,10 @@ public class Controller {
     public ResponseEntity<Object> getAllResultsData(){
         return new ResponseEntity<>(dataBaseService.getData(), HttpStatus.OK);
     }
+
+    @GetMapping("/findByFutureId")
+    public ResultOfDivideEntity findById(@RequestParam int id) {
+        return dataBaseService.findByFutureId(id);
+    }
+
 }
